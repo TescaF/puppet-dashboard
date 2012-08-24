@@ -295,8 +295,24 @@ namespace :nodegroup do
 
     group = NodeGroup.find_by_name(groupname)
     if group.nil?
-      puts "Cannot find group: #{groupname}"
-      exit 1
+      if "default".casecmp(groupname) == 0
+        classes = []
+        req_classes = ['pe_compliance', 'pe_accounts', 'pe_mcollective']
+        begin
+          req_classes.each do |name|
+            nc = NodeClass.find_by_name(name)
+            if nc.nil?
+              nc = NodeClass.new(:name => name)
+              nc.save
+            end
+            classes << nc
+          end
+        end
+        group = NodeGroup.new(:name => "default")
+        group.node_classes = classes
+      else
+        puts "Cannot find group: #{groupname}"
+      end
     end
 
     begin
